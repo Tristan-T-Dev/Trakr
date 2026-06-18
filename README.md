@@ -69,7 +69,7 @@ Powered by **Finnhub API**
 - **Backend:** Next.js API Routes / Node.js
 - **AI Engine:** Groq LLM API
 - **Market Data:** Finnhub, Polygon.io
-- **State Management:** Zustand / Redux (if applicable)
+- **State Management:** Zustand 
 
 ---
 
