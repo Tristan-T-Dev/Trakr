@@ -68,17 +68,22 @@ export default function PortfolioSummary() {
     if (!loading && currentValue > 0) createSnapshot(currentValue)
   }, [currentValue, loading])
 
-  const chartData = useMemo(() => {
-    const seen = new Set<number>()
-    return portfolioHistory
-      .map((s) => ({ time: Math.floor(s.timestamp / 1000), value: s.value }))
-      .filter(({ time }) => {
-        if (seen.has(time)) return false
-        seen.add(time)
-        return true
-      })
-      .sort((a, b) => a.time - b.time)
-  }, [portfolioHistory])
+const chartData = useMemo(() => {
+  const seen = new Set<number>()
+
+  return portfolioHistory
+    .map((s) => ({
+      time: String(Math.floor(s.timestamp / 1000)), // ✅ convert to string
+      value: s.value,
+    }))
+    .filter(({ time }) => {
+      const numericTime = Number(time)
+      if (seen.has(numericTime)) return false
+      seen.add(numericTime)
+      return true
+    })
+    .sort((a, b) => Number(a.time) - Number(b.time))
+}, [portfolioHistory])
 
   const averagePosition = holdings.length > 0 ? currentValue / holdings.length : 0
 
