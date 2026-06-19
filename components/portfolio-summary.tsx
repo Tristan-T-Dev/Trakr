@@ -68,22 +68,20 @@ export default function PortfolioSummary() {
     if (!loading && currentValue > 0) createSnapshot(currentValue)
   }, [currentValue, loading])
 
-const chartData = useMemo(() => {
-  const seen = new Set<number>()
-
-  return portfolioHistory
-    .map((s) => ({
-      time: String(Math.floor(s.timestamp / 1000)), // ✅ convert to string
-      value: s.value,
-    }))
-    .filter(({ time }) => {
-      const numericTime = Number(time)
-      if (seen.has(numericTime)) return false
-      seen.add(numericTime)
-      return true
-    })
-    .sort((a, b) => Number(a.time) - Number(b.time))
-}, [portfolioHistory])
+  const chartData = useMemo(() => {
+    const seen = new Set<string>()
+    return portfolioHistory
+      .map((s) => ({
+        time: new Date(s.timestamp).toISOString().slice(0, 10),
+        value: s.value,
+      }))
+      .filter(({ time }) => {
+        if (seen.has(time)) return false
+        seen.add(time)
+        return true
+      })
+      .sort((a, b) => (a.time > b.time ? 1 : -1))
+  }, [portfolioHistory])
 
   const averagePosition = holdings.length > 0 ? currentValue / holdings.length : 0
 
@@ -91,26 +89,26 @@ const chartData = useMemo(() => {
     n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
   return (
-    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-6 space-y-5">
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 sm:p-6 space-y-4 sm:space-y-5">
 
       {/* Header row */}
-      <div className="flex items-start justify-between">
-        <div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
           <p className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shrink-0" />
             Portfolio value
           </p>
 
           {loading ? (
-            <div className="h-9 w-44 rounded-lg bg-slate-100 dark:bg-slate-800 animate-pulse" />
+            <div className="h-8 sm:h-9 w-36 sm:w-44 rounded-lg bg-slate-100 dark:bg-slate-800 animate-pulse" />
           ) : (
-            <h1 className="text-[32px] font-medium tracking-tight text-slate-900 dark:text-white leading-none">
+            <h1 className="text-2xl sm:text-[32px] font-medium tracking-tight text-slate-900 dark:text-white leading-none truncate">
               ${fmt(currentValue)}
             </h1>
           )}
 
           {!loading && (
-            <div className="mt-2.5">
+            <div className="mt-2 sm:mt-2.5">
               <span className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full ${
                 isPositive
                   ? "bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-400"
@@ -122,7 +120,8 @@ const chartData = useMemo(() => {
                     : <path d="M5 2v6M2 5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   }
                 </svg>
-                {isPositive ? "+" : ""}${gainLoss.toFixed(2)} · {gainPercent.toFixed(2)}%
+                <span className="hidden xs:inline">{isPositive ? "+" : ""}${gainLoss.toFixed(2)} · </span>
+                {gainPercent.toFixed(2)}%
               </span>
             </div>
           )}
@@ -133,7 +132,7 @@ const chartData = useMemo(() => {
           onClick={handleRefresh}
           disabled={loading || refreshing}
           aria-label="Refresh prices"
-          className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 transition-colors"
+          className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 transition-colors shrink-0"
         >
           <svg
             width="14" height="14" viewBox="0 0 14 14" fill="none"
@@ -148,7 +147,7 @@ const chartData = useMemo(() => {
       {chartData.length > 1 ? (
         <StockChart data={chartData} />
       ) : (
-        <div className="flex h-[160px] items-center justify-center rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
+        <div className="flex h-[120px] sm:h-[160px] items-center justify-center rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
           <p className="text-xs text-slate-400 dark:text-slate-600">
             Tracking portfolio performance...
           </p>
@@ -159,7 +158,7 @@ const chartData = useMemo(() => {
       <div className="h-px bg-slate-100 dark:bg-slate-800" />
 
       {/* Stat cards */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {[
           {
             icon: (
@@ -188,16 +187,19 @@ const chartData = useMemo(() => {
         ].map(({ icon, label, value, sub }) => (
           <div
             key={label}
-            className="bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl p-4 transition-colors duration-150"
+            className="bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl p-3 sm:p-4 transition-colors duration-150 min-w-0"
           >
-            <p className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 mb-2">
-              <span className="text-slate-400 dark:text-slate-500">{icon}</span>
-              {label}
+            <p className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 mb-1.5 sm:mb-2">
+              <span className="text-slate-400 dark:text-slate-500 shrink-0">{icon}</span>
+              <span className="truncate">{label}</span>
             </p>
-            <p className="text-base font-medium text-slate-900 dark:text-white tracking-tight">
-              {loading ? <span className="inline-block w-16 h-4 rounded bg-slate-200 dark:bg-slate-700 animate-pulse" /> : value}
+            <p className="text-sm sm:text-base font-medium text-slate-900 dark:text-white tracking-tight truncate">
+              {loading
+                ? <span className="inline-block w-12 sm:w-16 h-4 rounded bg-slate-200 dark:bg-slate-700 animate-pulse" />
+                : value
+              }
             </p>
-            <p className="text-[11px] text-slate-400 dark:text-slate-600 mt-0.5">{sub}</p>
+            <p className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-600 mt-0.5 truncate">{sub}</p>
           </div>
         ))}
       </div>
